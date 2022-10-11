@@ -101,6 +101,7 @@ class TicTacGame:
             side = 'O' if side == 'X' else 'X'
 
 
-game = TicTacGame()
-game.start_game()  # run for player vs player game
-# game.computer_game()  # run for computer vs computer game
+if __name__ == '__main__':
+    game = TicTacGame()
+    game.start_game()  # run for player vs player game
+    # game.computer_game()  # run for computer vs computer game
