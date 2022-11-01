@@ -2,23 +2,19 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-
-
-chats = [
-        {'id': 1, 'title': 'Bob'},
-        {'id': 2, 'title': 'Mark'},
-        {'id': 3, 'title': 'Jennifer'}
-    ]
+from .models import Chat, Message
 
 
 @require_http_methods(['GET'])
 def chat_list(request):
-    return JsonResponse({'chats': chats})
+    chats = Chat.objects.all().values()
+    return JsonResponse({"chats": list(chats)})
 
 
 @require_http_methods(['GET'])
 def chat_page(request, chat_id):
-    return JsonResponse(chats[chat_id - 1])
+    chat = Chat.objects.filter(id=chat_id).values()
+    return JsonResponse({"chat": list(chat)})
 
 
 @csrf_exempt
@@ -26,9 +22,33 @@ def chat_page(request, chat_id):
 def create_chat(request):
     data = request.POST
     title = data.get('title')
-    new_id = len(chats) + 1
-    chats.append({'id': new_id, 'title': title})
-    return JsonResponse(chats[new_id - 1], status=201)
+    new_chat = Chat(title=title)
+    new_chat.save()
+    new_chat_id = new_chat.id
+    new_chat_iterable = Chat.objects.filter(id=new_chat_id).values()
+    return JsonResponse({"chat": list(new_chat_iterable)}, status=201)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_chat(request):
+    data = request.POST
+    chat_id = data.get('delete_chat_id')
+    chat_to_delete = Chat.objects.get(id=chat_id)
+    chat_to_delete_iterable = list(Chat.objects.filter(id=chat_id).values())
+    chat_to_delete.delete()
+    return JsonResponse({"deleted chat": chat_to_delete_iterable})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def modify_chat(request):
+    data = request.POST
+    chat_id = data.get('modify_chat_id')
+    new_title = data.get('new_title')
+    Chat.objects.filter(id=chat_id).update(title=new_title)
+    modified_chat = Chat.objects.filter(id=chat_id).values()
+    return JsonResponse({"chat modified": list(modified_chat)})
 
 
 @require_http_methods(['GET'])
