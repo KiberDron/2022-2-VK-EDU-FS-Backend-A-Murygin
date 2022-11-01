@@ -26,8 +26,8 @@ def create_chat(request):
     new_chat = Chat(title=title)
     new_chat.save()
     new_chat_id = new_chat.id
-    new_chat_iterable = Chat.objects.filter(id=new_chat_id).values()
-    return JsonResponse({"chat": list(new_chat_iterable)}, status=201)
+    new_chat_serializable = Chat.objects.filter(id=new_chat_id).values()[0]
+    return JsonResponse({"chat": new_chat_serializable}, status=201)
 
 
 @csrf_exempt
@@ -36,20 +36,20 @@ def delete_chat(request):
     data = request.POST
     chat_id = data.get('delete_chat_id')
     chat_to_delete = Chat.objects.get(id=chat_id)
-    chat_to_delete_iterable = list(Chat.objects.filter(id=chat_id).values())
+    chat_to_delete_serializable = Chat.objects.filter(id=chat_id).values()[0]
     chat_to_delete.delete()
-    return JsonResponse({"deleted chat": chat_to_delete_iterable})
+    return JsonResponse({"deleted chat": chat_to_delete_serializable})
 
 
 @csrf_exempt
-@require_http_methods(['POST'])  # PUT
+@require_http_methods(['POST'])  # PUT/PATCH
 def modify_chat(request):
     data = request.POST
     chat_id = data.get('modify_chat_id')
     new_title = data.get('new_title')
     Chat.objects.filter(id=chat_id).update(title=new_title)
-    modified_chat = Chat.objects.filter(id=chat_id).values()
-    return JsonResponse({"chat modified": list(modified_chat)})
+    modified_chat = Chat.objects.filter(id=chat_id).values()[0]
+    return JsonResponse({"chat modified": modified_chat})
 
 
 @require_http_methods(['GET'])
