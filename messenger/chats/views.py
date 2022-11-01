@@ -3,6 +3,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from .models import Chat, Message
+# использовать postman для тестирования
 
 
 @require_http_methods(['GET'])
@@ -13,8 +14,8 @@ def chat_list(request):
 
 @require_http_methods(['GET'])
 def chat_page(request, chat_id):
-    chat = Chat.objects.filter(id=chat_id).values()
-    return JsonResponse({"chat": list(chat)})
+    chat = Chat.objects.filter(id=chat_id).values()[0]
+    return JsonResponse({"chat": chat})  # +сообщения в чате
 
 
 @csrf_exempt
@@ -30,7 +31,7 @@ def create_chat(request):
 
 
 @csrf_exempt
-@require_http_methods(['POST'])
+@require_http_methods(['POST'])  # DELETE
 def delete_chat(request):
     data = request.POST
     chat_id = data.get('delete_chat_id')
@@ -41,7 +42,7 @@ def delete_chat(request):
 
 
 @csrf_exempt
-@require_http_methods(['POST'])
+@require_http_methods(['POST'])  # PUT
 def modify_chat(request):
     data = request.POST
     chat_id = data.get('modify_chat_id')
