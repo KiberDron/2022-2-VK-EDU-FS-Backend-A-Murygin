@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Messenger</title>
-</head>
-<body>
-  <header>
-    <h1>Welcome to the best messenger! :)</h1>
-  </header>
-  <a href="{% url 'chats:chat_list' %}">Chat list</a>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Messenger</title>
+    </head>
+    <body>
+        <header>
+            <h1>Welcome to the best messenger! :)</h1>
+        </header>
+        <a href="{% url 'chats:chat_list' %}">Chat list</a>
+        <form action="{% url 'chats:create_chat' %}" method="post" class="create_chat_form">
+            {% csrf_token %}
+            <div class="create_chat_form">
+                <label for="title">Enter new chat title: </label>
+                <input name="title" id="title" required>
+            </div>
+            <div class="create_chat_form">
+                <input type="submit" value="Create">
+            </div>
+        </form>
+    </body>
 </html>

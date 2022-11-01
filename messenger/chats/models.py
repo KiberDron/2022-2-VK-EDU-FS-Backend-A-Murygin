@@ -3,15 +3,25 @@ from users.models import User
 
 
 class Chat(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    title = models.CharField(max_length=200, verbose_name='Название чата')
+    description = models.TextField(blank=True, verbose_name='Описание чата')
+
+    class Meta:
+        verbose_name = 'Чат'
 
     def __str__(self):
         return self.title
 
 
 class Message(models.Model):
-    chat_id = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    message_text = models.TextField()
-    creation_date = models.DateTimeField(auto_now_add=True)
+    chat = models.ForeignKey(
+        Chat,
+        on_delete=models.CASCADE,
+        default=None,
+        verbose_name='Чат, в котором находится сообщение')
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='Отправитель сообщения')
+    message_text = models.TextField(verbose_name='Текст сообщения')
+    creation_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания сообщения')
+
+    class Meta:
+        verbose_name = 'Сообщение'

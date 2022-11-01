@@ -4,25 +4,31 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 
 
-@require_http_methods(['GET'])
-def chat_list(request):
-    chats = [
+chats = [
         {'id': 1, 'title': 'Bob'},
         {'id': 2, 'title': 'Mark'},
         {'id': 3, 'title': 'Jennifer'}
     ]
+
+
+@require_http_methods(['GET'])
+def chat_list(request):
     return JsonResponse({'chats': chats})
 
 
 @require_http_methods(['GET'])
 def chat_page(request, chat_id):
-    return JsonResponse({'chat': chat_id})
+    return JsonResponse(chats[chat_id - 1])
 
 
 @csrf_exempt
-@require_http_methods(['POST', 'GET'])
-def create_chat(request, pk):
-    return JsonResponse({'chat_pk': pk})
+@require_http_methods(['POST'])
+def create_chat(request):
+    data = request.POST
+    title = data.get('title')
+    new_id = len(chats) + 1
+    chats.append({'id': new_id, 'title': title})
+    return JsonResponse(chats[new_id - 1], status=201)
 
 
 @require_http_methods(['GET'])
