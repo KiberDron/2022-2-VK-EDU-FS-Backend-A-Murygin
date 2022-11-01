@@ -19,11 +19,13 @@ class Message(models.Model):
         Chat,
         on_delete=models.CASCADE,
         default=None,
+        related_name='messages',
         verbose_name='Чат, в котором находится сообщение')
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         on_delete=models.SET_NULL,
+        related_name='messages',
         verbose_name='Отправитель сообщения')
     message_text = models.TextField(verbose_name='Текст сообщения')
     creation_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания сообщения')

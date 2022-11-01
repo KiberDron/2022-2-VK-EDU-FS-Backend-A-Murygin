@@ -7,7 +7,7 @@ class User(AbstractUser):
     status = models.CharField('Статус', max_length=200, blank=True)
     birthday = models.DateField('Дата рождения', null=True, blank=True)
     location = models.CharField('Город', max_length=30, blank=True)
-    chats = models.ManyToManyField('chats.Chat', verbose_name='Чаты пользователя')
+    chats = models.ManyToManyField('chats.Chat', related_name='users', verbose_name='Чаты пользователя')
 
     class Meta:
         verbose_name = 'Пользователь'
