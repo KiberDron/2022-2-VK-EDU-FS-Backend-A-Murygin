@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import User
+from django.conf import settings
 
 
 class Chat(models.Model):
@@ -20,7 +20,11 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         default=None,
         verbose_name='Чат, в котором находится сообщение')
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, verbose_name='Отправитель сообщения')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Отправитель сообщения')
     message_text = models.TextField(verbose_name='Текст сообщения')
     creation_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания сообщения')
 
