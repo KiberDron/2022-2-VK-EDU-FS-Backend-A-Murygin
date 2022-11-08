@@ -1,9 +1,8 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Chat, Message
-# использовать postman для тестирования
 
 
 @require_http_methods(['GET'])
@@ -15,7 +14,8 @@ def chat_list(request):
 @require_http_methods(['GET'])
 def chat_page(request, chat_id):
     chat = Chat.objects.filter(id=chat_id).values()[0]
-    return JsonResponse({"chat": chat})  # +сообщения в чате
+    messages = Message.objects.filter(chat=chat_id).values()
+    return JsonResponse({"chat": chat, "messages": list(messages)})
 
 
 @csrf_exempt
@@ -31,18 +31,16 @@ def create_chat(request):
 
 
 @csrf_exempt
-@require_http_methods(['POST'])  # DELETE
-def delete_chat(request):
-    data = request.POST
-    chat_id = data.get('delete_chat_id')
-    chat_to_delete = Chat.objects.get(id=chat_id)
+@require_http_methods(['DELETE', 'GET'])
+def delete_chat(request, chat_id):
+    data = get_object_or_404(Chat, id=chat_id)
     chat_to_delete_serializable = Chat.objects.filter(id=chat_id).values()[0]
-    chat_to_delete.delete()
+    data.delete()
     return JsonResponse({"deleted chat": chat_to_delete_serializable})
 
 
 @csrf_exempt
-@require_http_methods(['POST'])  # PUT/PATCH
+@require_http_methods(['POST'])
 def modify_chat(request):
     data = request.POST
     chat_id = data.get('modify_chat_id')

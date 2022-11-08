@@ -21,16 +21,6 @@
                 <input type="submit" value="Create">
             </div>
         </form>
-        <form action="{% url 'chats:delete_chat' %}" method="post" class="delete_chat_form">
-            {% csrf_token %}
-            <div class="delete_chat_form">
-                <label for="delete_chat_id">Enter chat_id to delete: </label>
-                <input name="delete_chat_id" id="delete_chat_id" required>
-            </div>
-            <div class="delete_chat_form">
-                <input type="submit" value="Delete">
-            </div>
-        </form>
         <form action="{% url 'chats:modify_chat' %}" method="post" class="modify_chat_form">
             {% csrf_token %}
             <div class="modify_chat_form">
