@@ -5,6 +5,7 @@ from django.conf import settings
 class Chat(models.Model):
     title = models.CharField(max_length=200, verbose_name='Название чата')
     description = models.TextField(blank=True, verbose_name='Описание чата')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chats', verbose_name='Пользователи чата')
 
     class Meta:
         verbose_name = 'Чат'
