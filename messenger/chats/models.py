@@ -3,8 +3,8 @@ from django.conf import settings
 
 
 class Chat(models.Model):
-    title = models.CharField(max_length=200, verbose_name='Название чата')
-    description = models.TextField(blank=True, verbose_name='Описание чата')
+    title = models.CharField('Название чата', max_length=200)
+    description = models.TextField('Описание чата', blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chats', verbose_name='Пользователи чата')
 
     class Meta:
@@ -28,8 +28,9 @@ class Message(models.Model):
         on_delete=models.SET_NULL,
         related_name='messages',
         verbose_name='Отправитель сообщения')
-    message_text = models.TextField(verbose_name='Текст сообщения')
-    creation_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания сообщения')
+    message_text = models.TextField('Текст сообщения')
+    creation_date = models.DateTimeField('Дата и время создания сообщения', auto_now_add=True)
+    read_status = models.BooleanField('Статус прочтения сообщения', default=False)
 
     class Meta:
         verbose_name = 'Сообщение'
