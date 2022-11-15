@@ -1,10 +1,13 @@
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404
 from .models import Chat, Message
 from users.models import User
+from rest_framework import viewsets, generics
+from rest_framework.exceptions import NotFound
+from .serializers import ChatSerializer, CreateChatSerializer, MessageSerializer, CreateMessageSerializer
 
 
 @require_http_methods(['GET'])
@@ -12,10 +15,43 @@ def home_page(request):
     return render(request, 'chats/homepage.html')
 
 
-@require_http_methods(['GET'])
-def chat_list(request):
-    chats = Chat.objects.all().values()
-    return JsonResponse({"chats": list(chats)})
+class ChatList(generics.ListAPIView):
+    serializer_class = ChatSerializer
+    queryset = Chat.objects.all()
+
+
+class CreateChat(generics.CreateAPIView):
+    serializer_class = CreateChatSerializer
+
+
+class GetUpdateDeleteChat(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ChatSerializer
+
+    def get_queryset(self):
+        chat_id = self.kwargs['pk']
+        return Chat.objects.filter(id=chat_id)
+
+
+class ChatMessagesList(generics.ListAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        chat_id = self.kwargs['chat_id']
+        return Message.objects.filter(chat__id=chat_id)
+
+
+class CreateMessage(generics.CreateAPIView):
+    serializer_class = CreateMessageSerializer
+
+    def perform_create(self, serializer):
+        chat_id = self.request.data.get("chat")
+        chat = get_object_or_404(Chat, id=chat_id)
+        author_id = self.request.data.get("author")
+        author = get_object_or_404(User, id=author_id)
+        if author.id in [item["id"] for item in chat.users.values()]:
+            return serializer.save(chat=chat)
+        else:
+            raise NotFound(detail=f"User with id={author_id} is not in chat with id={chat_id}")
 
 
 @require_http_methods(['GET'])
