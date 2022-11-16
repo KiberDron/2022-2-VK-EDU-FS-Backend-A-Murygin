@@ -24,6 +24,7 @@ class CreateChatSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     chat = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
+    user = serializers.CharField(source='author.username')
 
     def get_chat(self, message):
         title = message.chat
