@@ -1,9 +1,10 @@
 from django.shortcuts import redirect, get_object_or_404
+from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.exceptions import NotFound, NotAcceptable
-from .models import Chat, Message
+from .models import Chat, Message, ChatMember
 from users.models import User
-from .serializers import ChatSerializer, CreateChatSerializer, MessageSerializer, CreateMessageSerializer,\
+from .serializers import ChatSerializer, MessageSerializer, CreateMessageSerializer,\
     MessageReadStatusSerializer, UserInChatSerializer
 
 
@@ -18,7 +19,7 @@ class ChatList(generics.ListAPIView):
 
 
 class CreateChat(generics.CreateAPIView):
-    serializer_class = CreateChatSerializer
+    serializer_class = ChatSerializer
 
 
 class GetUpdateDeleteChat(generics.RetrieveUpdateDestroyAPIView):
@@ -47,8 +48,7 @@ class CreateMessage(generics.CreateAPIView):
         author = get_object_or_404(User, id=author_id)
         if author.id in [item["id"] for item in chat.users.values()]:
             return serializer.save(chat=chat)
-        else:
-            raise NotFound(detail=f"User with id={author_id} is not in chat with id={chat_id}")
+        raise NotFound(detail=f"User with id={author_id} is not in chat with id={chat_id}")
 
 
 class GetUpdateDeleteMessage(generics.RetrieveUpdateDestroyAPIView):
@@ -71,45 +71,28 @@ class MarkMessageAsRead(generics.UpdateAPIView):
         message = get_object_or_404(Message, id=message_id)
         if not message.read_status:
             return Message.objects.filter(id=message_id).update(read_status=True)
-        else:
-            raise NotAcceptable(detail=f"Message with id={message_id} is already read")
+        raise NotAcceptable(detail=f"Message with id={message_id} is already read")
 
 
-class AddUserToChat(generics.RetrieveUpdateAPIView):
+class AddUserToChat(generics.CreateAPIView):
     serializer_class = UserInChatSerializer
 
-    def get_queryset(self):
-        chat_id = self.kwargs["pk"]
-        return Chat.objects.filter(id=chat_id)
-
-    def perform_update(self, serializer):
+    def perform_create(self, serializer):
         chat_id = self.kwargs["pk"]
         chat = get_object_or_404(Chat, id=chat_id)
-        users_id = self.request.data.get("users")
-        for user_id in users_id:
-            user = get_object_or_404(User, id=user_id)
-            if user.id not in [item["id"] for item in chat.users.values()]:
-                chat.users.add(user)
-            else:
-                continue
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, id=user_id)
+        ChatMember.objects.get_or_create(chat_id=chat_id, user_id=user_id)
         return chat
 
 
-class DeleteUserFromChat(generics.RetrieveUpdateAPIView):
+class DeleteUserFromChat(generics.DestroyAPIView):
     serializer_class = UserInChatSerializer
 
-    def get_queryset(self):
-        chat_id = self.kwargs["pk"]
-        return Chat.objects.filter(id=chat_id)
-
-    def perform_update(self, serializer):
+    def destroy(self, request, *args, **kwargs):
         chat_id = self.kwargs["pk"]
         chat = get_object_or_404(Chat, id=chat_id)
-        users_id = self.request.data.get("users")
-        for user_id in users_id:
-            user = get_object_or_404(User, id=user_id)
-            if user.id in [item["id"] for item in chat.users.values()]:
-                chat.users.remove(user)
-            else:
-                continue
-        return chat
+        member_id = self.kwargs["member_id"]
+        chat_member = get_object_or_404(ChatMember, id=member_id)
+        chat_member.delete()
+        return JsonResponse({})

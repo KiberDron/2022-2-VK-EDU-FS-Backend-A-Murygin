@@ -12,5 +12,5 @@ urlpatterns = [
     path('messages/<int:pk>/', views.GetUpdateDeleteMessage.as_view(), name='get_update_delete_message'),
     path('messages/<int:pk>/read/', views.MarkMessageAsRead.as_view(), name='mark_message_as_read'),
     path('<int:pk>/add/', views.AddUserToChat.as_view(), name='add_user_to_chat'),
-    path('<int:pk>/delete/', views.DeleteUserFromChat.as_view(), name='delete_user_from_chat'),
+    path('<int:pk>/delete/<int:member_id>/', views.DeleteUserFromChat.as_view(), name='delete_user_from_chat'),
 ]

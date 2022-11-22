@@ -1,38 +1,15 @@
 from rest_framework import serializers
-from .models import Chat, Message
+from .models import Chat, Message, ChatMember
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    users = serializers.SerializerMethodField()
-
-    def get_users(self, chat):
-        names = chat.users.values_list('username')
-        single_names = [name[0] for name in names]
-        return single_names
-
     class Meta:
         model = Chat
-        fields = ['id', 'title', 'description', 'users']
-
-
-class CreateChatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Chat
-        fields = ['id', 'title', 'description', 'users']
+        fields = ['id', 'title', 'description']
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    chat = serializers.SerializerMethodField()
-    author = serializers.SerializerMethodField()
-    user = serializers.CharField(source='author.username')
-
-    def get_chat(self, message):
-        title = message.chat
-        return str(title)
-
-    def get_author(self, message):
-        name = message.author
-        return str(name)
+    chat = serializers.CharField(source='chat.title')
 
     class Meta:
         model = Message
@@ -53,5 +30,5 @@ class MessageReadStatusSerializer(serializers.ModelSerializer):
 
 class UserInChatSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Chat
-        fields = ['users']
+        model = ChatMember
+        fields = ['chat', 'user']

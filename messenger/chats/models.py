@@ -5,7 +5,6 @@ from django.conf import settings
 class Chat(models.Model):
     title = models.CharField('Название чата', max_length=200)
     description = models.TextField('Описание чата', blank=True)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chats', verbose_name='Пользователи чата')
 
     class Meta:
         verbose_name = 'Чат'
@@ -13,6 +12,26 @@ class Chat(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ChatMember(models.Model):
+    chat = models.ForeignKey(
+        Chat,
+        on_delete=models.CASCADE,
+        default=None,
+        related_name='members',
+        verbose_name='Чат, в котором состоит пользователь')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='members',
+        verbose_name='Участник чата')
+    is_admin = models.BooleanField('Статус участника в чате', default=False)
+
+    class Meta:
+        verbose_name = 'Участник'
+        verbose_name_plural = 'Участники'
 
 
 class Message(models.Model):
@@ -23,7 +42,7 @@ class Message(models.Model):
         related_name='messages',
         verbose_name='Чат, в котором находится сообщение')
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        ChatMember,
         null=True,
         on_delete=models.SET_NULL,
         related_name='messages',
