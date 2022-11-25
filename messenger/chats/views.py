@@ -45,10 +45,8 @@ class CreateMessage(generics.CreateAPIView):
         chat_id = self.kwargs['chat_id']
         chat = get_object_or_404(Chat, id=chat_id)
         author_id = self.request.data.get("author")
-        author = get_object_or_404(ChatMember, id=author_id)
-        if author.chat_id == chat_id:
-            return serializer.save(chat=chat)
-        raise NotFound(detail=f"User with id={author_id} is not in chat with id={chat_id}")
+        get_object_or_404(ChatMember, chat_id=chat_id, user_id=author_id)
+        return serializer.save(chat=chat)
 
 
 class GetUpdateDeleteMessage(generics.RetrieveUpdateDestroyAPIView):
