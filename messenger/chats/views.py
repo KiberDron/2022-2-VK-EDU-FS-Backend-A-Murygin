@@ -9,7 +9,7 @@ from .serializers import ChatSerializer, MessageSerializer, CreateMessageSeriali
 
 
 def redirect_view(request):
-    response = redirect('/chats/')
+    response = redirect('/api/chats/')
     return response
 
 

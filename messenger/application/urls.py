@@ -20,7 +20,7 @@ from chats.views import redirect_view
 
 urlpatterns = [
     path('', redirect_view, name='redirect_view'),
-    path('chats/', include('chats.urls')),
-    path('users/', include('users.urls')),
+    path('api/chats/', include('chats.urls')),
+    path('api/users/', include('users.urls')),
     path('admin/', admin.site.urls),
 ]

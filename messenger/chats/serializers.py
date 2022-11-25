@@ -13,13 +13,14 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'chat', 'author', 'message_text', 'creation_date', 'read_status']
+        fields = ['id', 'chat', 'author', 'text', 'creation_date', 'read_status']
 
 
 class CreateMessageSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Message
-        fields = ['author', 'message_text']
+        fields = ['author', 'text']
 
 
 class MessageReadStatusSerializer(serializers.ModelSerializer):

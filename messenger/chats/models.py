@@ -47,7 +47,7 @@ class Message(models.Model):
         on_delete=models.SET_NULL,
         related_name='messages',
         verbose_name='Отправитель сообщения')
-    message_text = models.TextField('Текст сообщения')
+    text = models.TextField('Текст сообщения')
     creation_date = models.DateTimeField('Дата и время создания сообщения', auto_now_add=True)
     read_status = models.BooleanField('Статус прочтения сообщения', default=False)
 
