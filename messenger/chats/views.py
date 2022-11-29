@@ -1,4 +1,5 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.exceptions import NotFound, NotAcceptable
@@ -8,9 +9,13 @@ from .serializers import ChatSerializer, MessageSerializer, CreateMessageSeriali
     MessageReadStatusSerializer, UserInChatSerializer
 
 
-def redirect_view(request):
-    response = redirect('/api/chats/')
-    return response
+@login_required
+def home(request):
+    return render(request, 'home.html')
+
+
+def login(request):
+    return render(request, 'login.html')
 
 
 class ChatList(generics.ListAPIView):
