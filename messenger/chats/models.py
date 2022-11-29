@@ -42,7 +42,7 @@ class Message(models.Model):
         related_name='messages',
         verbose_name='Чат, в котором находится сообщение')
     author = models.ForeignKey(
-        ChatMember,
+        settings.AUTH_USER_MODEL,
         null=True,
         on_delete=models.SET_NULL,
         related_name='messages',
