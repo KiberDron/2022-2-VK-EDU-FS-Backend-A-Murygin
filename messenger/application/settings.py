@@ -57,7 +57,7 @@ LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = 'login'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '81180684513-55v1g0lsb92av6cau6je46qtqam9cjko.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
