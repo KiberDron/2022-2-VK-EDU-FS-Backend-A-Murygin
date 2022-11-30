@@ -16,11 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from chats import views as chat_views
+from chats.views import redirect_view
 
 urlpatterns = [
-    path('', chat_views.home_page, name='homepage'),
-    path('chats/', include('chats.urls')),
-    path('users/', include('users.urls')),
+    path('', redirect_view, name='redirect_view'),
+    path('api/chats/', include('chats.urls')),
+    path('api/users/', include('users.urls')),
     path('admin/', admin.site.urls),
 ]

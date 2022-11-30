@@ -1,97 +1,96 @@
-import json
+from django.shortcuts import redirect, get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404
+from rest_framework import generics
+from rest_framework.exceptions import NotFound, NotAcceptable
 from .models import Chat, Message, ChatMember
+from users.models import User
+from .serializers import ChatSerializer, MessageSerializer, CreateMessageSerializer,\
+    MessageReadStatusSerializer, UserInChatSerializer
 
 
-@require_http_methods(['GET'])
-def home_page(request):
-    return render(request, 'chats/homepage.html')
+def redirect_view(request):
+    response = redirect('/api/chats/')
+    return response
 
 
-@require_http_methods(['GET'])
-def chat_list(request):
-    chats = Chat.objects.all().values()
-    return JsonResponse({"chats": list(chats)})
+class ChatList(generics.ListAPIView):
+    serializer_class = ChatSerializer
+    queryset = Chat.objects.all()
 
 
-@require_http_methods(['GET'])
-def chat_page(request, chat_id):
-    get_object_or_404(Chat, id=chat_id)
-    chat = Chat.objects.filter(id=chat_id).values()[0]
-    messages = Message.objects.filter(chat=chat_id).values()
-    return JsonResponse({"chat": chat, "messages": list(messages)})
+class CreateChat(generics.CreateAPIView):
+    serializer_class = ChatSerializer
 
 
-@csrf_exempt
-@require_http_methods(['POST'])
-def create_chat(request):
-    data = json.loads(request.body)
-    chat = Chat.objects.create(**data)
-    return JsonResponse({"chat_pk": chat.id}, status=201)
+class GetUpdateDeleteChat(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ChatSerializer
+
+    def get_queryset(self):
+        chat_id = self.kwargs['pk']
+        return Chat.objects.filter(id=chat_id)
 
 
-@csrf_exempt
-@require_http_methods(['DELETE'])
-def delete_chat(request, chat_id):
-    data = get_object_or_404(Chat, id=chat_id)
-    data.delete()
-    return JsonResponse({})
+class ChatMessagesList(generics.ListAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        chat_id = self.kwargs['chat_id']
+        return Message.objects.filter(chat__id=chat_id)
 
 
-@csrf_exempt
-@require_http_methods(['PATCH'])
-def modify_chat(request, chat_id):
-    get_object_or_404(Chat, id=chat_id)
-    data = json.loads(request.body)
-    Chat.objects.filter(id=chat_id).update(**data)
-    return JsonResponse({"chat_pk": chat_id})
+class CreateMessage(generics.CreateAPIView):
+    serializer_class = CreateMessageSerializer
+
+    def perform_create(self, serializer):
+        chat_id = self.kwargs['chat_id']
+        chat = get_object_or_404(Chat, id=chat_id)
+        author_id = self.request.data.get("author")
+        get_object_or_404(ChatMember, chat_id=chat_id, user_id=author_id)
+        return serializer.save(chat=chat)
 
 
-@require_http_methods(['GET'])
-def chat_messages(request, chat_id):
-    get_object_or_404(Chat, id=chat_id)
-    messages_in_chat = Message.objects.filter(chat_id=chat_id).values()
-    return JsonResponse({"messages": list(messages_in_chat)})
+class GetUpdateDeleteMessage(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        message_id = self.kwargs['pk']
+        return Message.objects.filter(id=message_id)
 
 
-@csrf_exempt
-@require_http_methods(['POST'])
-def create_message(request):
-    data = json.loads(request.body)
-    chat_id = data["chat_id"]
-    author_id = data["author_id"]
-    text = data["message_text"]
-    if text and get_object_or_404(ChatMember, chat_id=chat_id, user_id=author_id):
-        message = Message.objects.create(**data)
-        return JsonResponse({"message_pk": message.id}, status=201)
-    return JsonResponse({"message_pk": False}, status=400)
+class MarkMessageAsRead(generics.UpdateAPIView):
+    serializer_class = MessageReadStatusSerializer
+
+    def get_queryset(self):
+        message_id = self.kwargs['pk']
+        return Message.objects.filter(id=message_id)
+
+    def perform_update(self, serializer):
+        message_id = self.kwargs['pk']
+        message = get_object_or_404(Message, id=message_id)
+        if not message.read_status:
+            return Message.objects.filter(id=message_id).update(read_status=True)
+        raise NotAcceptable(detail=f"Message with id={message_id} is already read")
 
 
-@csrf_exempt
-@require_http_methods(['DELETE'])
-def delete_message(request, message_id):
-    data = get_object_or_404(Message, id=message_id)
-    data.delete()
-    return JsonResponse({})
+class AddUserToChat(generics.CreateAPIView):
+    serializer_class = UserInChatSerializer
+
+    def perform_create(self, serializer):
+        chat_id = self.kwargs["pk"]
+        chat = get_object_or_404(Chat, id=chat_id)
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, id=user_id)
+        ChatMember.objects.get_or_create(chat_id=chat_id, user_id=user_id)
+        return chat
 
 
-@csrf_exempt
-@require_http_methods(['PATCH'])
-def modify_message(request, message_id):
-    get_object_or_404(Message, id=message_id)
-    data = json.loads(request.body)
-    Message.objects.filter(id=message_id).update(**data)
-    return JsonResponse({"message_pk": message_id})
+class DeleteUserFromChat(generics.DestroyAPIView):
+    serializer_class = UserInChatSerializer
 
-
-@csrf_exempt
-@require_http_methods(['PATCH'])
-def mark_message_as_read(request, message_id):
-    message = get_object_or_404(Message, id=message_id)
-    if not message.read_status:
-        Message.objects.filter(id=message_id).update(read_status=True)
-        return JsonResponse({"message_pk": message_id})
-    return JsonResponse({"message_pk": False}, status=400)
+    def destroy(self, request, *args, **kwargs):
+        chat_id = self.kwargs["pk"]
+        chat = get_object_or_404(Chat, id=chat_id)
+        member_id = self.kwargs["member_id"]
+        chat_member = get_object_or_404(ChatMember, id=member_id)
+        chat_member.delete()
+        return JsonResponse({})   
