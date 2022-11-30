@@ -93,4 +93,4 @@ class DeleteUserFromChat(generics.DestroyAPIView):
         member_id = self.kwargs["member_id"]
         chat_member = get_object_or_404(ChatMember, id=member_id)
         chat_member.delete()
-        return JsonResponse({})
+        return JsonResponse({})   
