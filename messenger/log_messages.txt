@@ -1,0 +1,2 @@
+This log-file is updated every 30 seconds and contains information about the number of sent messages
+

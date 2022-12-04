@@ -10,6 +10,7 @@ from users.models import User
 from .serializers import ChatSerializer, MessageSerializer, CreateMessageSerializer,\
     MessageReadStatusSerializer, UserInChatSerializer
 from .permissions import IsMemberOrAdmin, IsMember, IsAuthor, IsAdmin
+from .tasks import send_admin_email
 
 
 def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
@@ -124,9 +125,12 @@ class AddUserToChat(LoginRequiredMixin, generics.CreateAPIView):
     def perform_create(self, serializer):
         chat_id = self.kwargs["pk"]
         chat = get_object_or_404(Chat, id=chat_id)
+        chat_title = chat.title
         user_id = self.request.data.get("user")
         user = get_object_or_404(User, id=user_id)
+        username = user.username
         ChatMember.objects.get_or_create(chat_id=chat_id, user_id=user_id)
+        send_admin_email.delay(username, chat_title)
         return chat
 
 
