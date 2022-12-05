@@ -11,6 +11,7 @@ from .serializers import ChatSerializer, MessageSerializer, CreateMessageSeriali
     MessageReadStatusSerializer, UserInChatSerializer
 from .permissions import IsMemberOrAdmin, IsMember, IsAuthor, IsAdmin
 from .tasks import send_admin_email
+from .utils import publish_message
 
 
 def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
@@ -68,16 +69,16 @@ class GetUpdateDeleteChat(LoginRequiredMixin, generics.RetrieveUpdateDestroyAPIV
         return Chat.objects.filter(id=chat_id)
 
 
-class ChatMessagesList(LoginRequiredMixin, generics.ListAPIView):
+class ChatMessagesList(generics.ListAPIView):
     serializer_class = MessageSerializer
-    permission_classes = (IsMember,)
+    #permission_classes = (IsMember,)
 
     def get_queryset(self):
         chat_id = self.kwargs['chat_id']
         return Message.objects.filter(chat__id=chat_id)
 
 
-class CreateMessage(LoginRequiredMixin, generics.CreateAPIView):
+class CreateMessage(generics.CreateAPIView):
     serializer_class = CreateMessageSerializer
 
     def perform_create(self, serializer):
@@ -85,7 +86,10 @@ class CreateMessage(LoginRequiredMixin, generics.CreateAPIView):
         chat = get_object_or_404(Chat, id=chat_id)
         author_id = self.request.data.get("author")
         get_object_or_404(ChatMember, chat_id=chat_id, user_id=author_id)
-        return serializer.save(chat=chat)
+        message_obj = serializer.save(chat=chat)
+        message = Message.objects.filter(id=message_obj.id).values()[0]
+        publish_message(message)
+        return JsonResponse({})
 
 
 class GetUpdateDeleteMessage(LoginRequiredMixin, generics.RetrieveUpdateDestroyAPIView):
