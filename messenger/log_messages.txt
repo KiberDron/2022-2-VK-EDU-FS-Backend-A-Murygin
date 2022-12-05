@@ -1,0 +1,6 @@
+This log-file is updated every 30 seconds and contains information about the number of sent messages
+
+2022-12-05 22:28:01.475994+03:00 : 41 messages sent
+2022-12-05 22:28:31.534745+03:00 : 41 messages sent
+2022-12-05 22:29:01.629583+03:00 : 42 messages sent
+2022-12-05 22:29:31.647538+03:00 : 42 messages sent

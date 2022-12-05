@@ -113,7 +113,7 @@ ipython_config.py
 __pypackages__/
 
 # Celery stuff
-celerybeat-schedule
+celerybeat-schedule.*
 celerybeat.pid
 
 # SageMath parsed files
@@ -236,3 +236,6 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+/messenger/centrifugo.exe
+/messenger/config.json
