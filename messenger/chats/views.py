@@ -11,7 +11,7 @@ from .serializers import ChatSerializer, MessageSerializer, CreateMessageSeriali
     MessageReadStatusSerializer, UserInChatSerializer
 from .permissions import IsMemberOrAdmin, IsMember, IsAuthor, IsAdmin
 from .tasks import send_admin_email
-from .utils import publish_message
+from .utils import publish_message, clear_tags
 
 
 def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
@@ -86,7 +86,8 @@ class CreateMessage(generics.CreateAPIView):
         chat = get_object_or_404(Chat, id=chat_id)
         author_id = self.request.data.get("author")
         get_object_or_404(ChatMember, chat_id=chat_id, user_id=author_id)
-        message_obj = serializer.save(chat=chat)
+        text = clear_tags(self.request.data.get("text"))
+        message_obj = Message.objects.create(chat_id=chat_id, author_id=author_id, text=text)
         message = Message.objects.filter(id=message_obj.id).values()[0]
         publish_message(message)
         return JsonResponse({})
