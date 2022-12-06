@@ -1,5 +1,6 @@
 import json
 import requests
+from bs4 import BeautifulSoup
 
 
 def publish_message(message, channel="chat"):
@@ -24,3 +25,9 @@ def parse_json_config(json_file):
     with open(json_file) as json_data:
         data = json.load(json_data)
     return data
+
+
+def clear_tags(text):
+    soup = BeautifulSoup(text, "html.parser")
+    clean_text = soup.get_text()
+    return clean_text
