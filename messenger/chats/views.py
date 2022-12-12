@@ -34,7 +34,8 @@ class LoginRequiredMixin(AccessMixin):
 
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    response = redirect('http://127.0.0.1:3000/')
+    return response
 
 
 def login(request):
@@ -69,9 +70,9 @@ class GetUpdateDeleteChat(LoginRequiredMixin, generics.RetrieveUpdateDestroyAPIV
         return Chat.objects.filter(id=chat_id)
 
 
-class ChatMessagesList(generics.ListAPIView):
+class ChatMessagesList(LoginRequiredMixin, generics.ListAPIView):
     serializer_class = MessageSerializer
-    #permission_classes = (IsMember,)
+    permission_classes = (IsMember,)
 
     def get_queryset(self):
         chat_id = self.kwargs['chat_id']

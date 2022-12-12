@@ -74,9 +74,14 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://localhost:8000',
+    'http://localhost:9000',
+    'http://127.0.0.1:3000',
 ]
 
-CORS_ALLOW_HEADERS = ['X-CSRF-TOKEN']
+CORS_ALLOW_HEADERS = ['X-CSRF-TOKEN', 'X-XSRF-TOKEN', 'X-CSRFToken']
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 
 ROOT_URLCONF = 'application.urls'
 
