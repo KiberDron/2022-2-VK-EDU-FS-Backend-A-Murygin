@@ -10,6 +10,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     chat = serializers.CharField(source='chat.title')
+    author = serializers.CharField(source='author.username')
 
     class Meta:
         model = Message
